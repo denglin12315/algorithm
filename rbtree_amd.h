@@ -34,6 +34,10 @@ struct rbtree_key_s {
 	unsigned long size;
 };
 #define BIT(x) (1<<(x))
+
+/*
+ * 查找rbtree的key构成,其实就两种查找方式：1.addr+size的查找方式; 2.单独addr的查找方式
+ */
 #define LKP_ALL (BIT(ADDR_BIT) | BIT(SIZE_BIT))
 #define LKP_ADDR (BIT(ADDR_BIT))
 #define LKP_ADDR_SIZE (BIT(ADDR_BIT) | BIT(SIZE_BIT))
@@ -41,22 +45,27 @@ struct rbtree_key_s {
 static inline rbtree_key_t
 rbtree_key(unsigned long addr, unsigned long size)
 {
+	/*
+	 * 类型的作用就是告诉C运行时该如何解释这块内存数据
+	 * 强转的作用也在于此
+	 */
 	return (rbtree_key_t){addr, size};
 }
  
 /*
- * compare addr, size one by one
+ * compare addr and size, just one by one
  */
 static inline int
 rbtree_key_compare(unsigned int type, rbtree_key_t *key1, rbtree_key_t *key2)
 {
+	/* 要插入节点的addr大于root节点的addr,返回1，否则返回-1 */
 	if ((type & 1 << ADDR_BIT) && (key1->addr != key2->addr))
 		return key1->addr > key2->addr ? 1 : -1;
  
 	if ((type & 1 << SIZE_BIT) && (key1->size != key2->size))
 		return key1->size > key2->size ? 1 : -1;
  
-	return 0;
+	return 0;			/* 0表示addr和size相等 */
 }
 #endif /*_RBTREE_AMD_H_*/
  
@@ -109,7 +118,10 @@ rbtree_node_any(rbtree_t *tree, int lmr)
  
 	return rbtree_min_max(tree, lmr);
 }
- 
+
+/*
+ * 这种带有inline的函数一般都定义在头文件中
+ */
 static inline rbtree_node_t *
 rbtree_lookup_nearest(rbtree_t *rbtree, rbtree_key_t *key,
 		unsigned int type, int lr)

@@ -43,12 +43,12 @@
 typedef struct rbtree_node_s rbtree_node_t;
  
 struct rbtree_node_s {
-	rbtree_key_t    key;
-	rbtree_node_t   *left;
-	rbtree_node_t   *right;
-	rbtree_node_t   *parent;
-	unsigned char   color;
-	unsigned char   data;
+	rbtree_key_t    key;		//该节点在rbtree中的索引
+	rbtree_node_t   *left;		//左子节点
+	rbtree_node_t   *right;		//右子节点
+	rbtree_node_t   *parent;	//父节点
+	unsigned char   color;		//red or black
+	unsigned char   data;		//该节点携带的数据————暂时没有使用到
 };
  
 typedef struct rbtree_s rbtree_t;
@@ -57,7 +57,10 @@ struct rbtree_s {
 	rbtree_node_t   *root;
 	rbtree_node_t   sentinel;
 };
- 
+/*
+ * 1.将根节点设置成红色
+ * 2.初始化根节点指针
+ */
 #define rbtree_init(tree)				\
 	rbtree_sentinel_init(&(tree)->sentinel);	\
 	(tree)->root = &(tree)->sentinel;
@@ -66,6 +69,7 @@ void rbtree_insert(rbtree_t *tree, rbtree_node_t *node);
 void rbtree_delete(rbtree_t *tree, rbtree_node_t *node);
 rbtree_node_t *rbtree_next(rbtree_t *tree,
 		rbtree_node_t *node);
+void rbtree_print(rbtree_t *tree);
  
 #define rbt_red(node)			((node)->color = 1)
 #define rbt_black(node)			((node)->color = 0)
@@ -74,9 +78,8 @@ rbtree_node_t *rbtree_next(rbtree_t *tree,
 #define rbt_copy_color(n1, n2)		(n1->color = n2->color)
  
 /* a sentinel must be black */
- 
 #define rbtree_sentinel_init(node)	rbt_black(node)
- 
+
 static inline rbtree_node_t *
 rbtree_min(rbtree_node_t *node, rbtree_node_t *sentinel)
 {
